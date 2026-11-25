@@ -226,7 +226,8 @@ td.r,th.r{text-align:right}
   .bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:2px;color:#a9c4bc;font-size:11px;font-weight:600;padding:6px 10px;border-radius:10px;cursor:pointer}
   .bottom-nav a.on{color:var(--forest);background:var(--mint)}
   .login{grid-template-columns:1fr}.login-art{padding:28px;min-height:auto}.login-art h1{font-size:28px}.login-art .ticker{display:none}
-  .mobile-me{display:flex!important}
+  .top h1{font-size:21px}
+  .bottom-nav a{flex:1;max-width:96px}
   table.resp thead{display:none}
   table.resp tr{display:grid;grid-template-columns:1fr auto;padding:10px 0;border-bottom:1px solid var(--line)}
   table.resp td{border:0;padding:3px 4px}
@@ -234,7 +235,17 @@ td.r,th.r{text-align:right}
   table.resp td.hide-m{display:none}
 }
 @media (max-width:520px){.kpis{grid-template-columns:minmax(0,1fr)}.row2{grid-template-columns:1fr}.kpi .val{font-size:22px}.bud{grid-template-columns:1fr auto}.bud .track{grid-column:1/-1;grid-row:2}}
-.mobile-me{display:none}
+/* ---------- Lembar menu "Lainnya" (ponsel) ---------- */
+.modal.sheet-wrap{place-items:end center;padding:0}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:8px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:sheetUp .22s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-grip{width:40px;height:4px;border-radius:9px;background:#cfd8d4;margin:6px auto 12px}
+.sheet-user{display:flex;gap:12px;align-items:center;padding:6px 8px 14px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.sheet-user b{display:block}.sheet-user small{color:var(--muted);text-transform:capitalize}
+.sheet-item{display:flex;align-items:center;gap:14px;width:100%;min-height:48px;border:0;background:transparent;padding:12px 10px;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;color:var(--ink);text-align:left}
+.sheet-item:hover{background:var(--surface-2)}.sheet-item.on{background:var(--mint);color:var(--forest)}.sheet-item.danger{color:var(--crit)}
+.sheet-sep{height:1px;background:var(--line);margin:6px 0}
 </style>
 </head>
 <body>
@@ -250,7 +261,7 @@ td.r,th.r{text-align:right}
    ===================================================================== */
 /* ▼▼ GITHUB PAGES: isi dengan URL aplikasi web Apps Script Anda (berakhiran /exec).
       Biarkan kosong bila file ini dipakai di dalam Apps Script / Google Sites. ▼▼ */
-const API_URL = '';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxI2l56rCXHCNiiF0rxIINksE82gK6WiYjBjgt8dO65WNuBqv4-N9l6Wx233IZYrLluiA/exec';
 /* ▲▲ ----------------------------------------------------------------------- ▲▲ */
 const GAS = !!(window.google && google.script && google.script.run);
 const DEMO = !GAS && !API_URL;
@@ -278,6 +289,7 @@ const I = {
   search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
   left:'<path d="M15 18l-6-6 6-6"/>', right:'<path d="M9 18l6-6-6-6"/>',
   sheet:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   piggy:'<path d="M19 10c1.2.6 2 1.7 2 3v1h-2.1a7 7 0 0 1-2.9 3.2V20h-3v-2h-3v2H7v-2.8A6.5 6.5 0 0 1 4 12c0-3.9 3.6-7 8-7 1.2 0 2.4.2 3.4.6L18 4v4.2c.4.5.8 1.1 1 1.8z"/><path d="M15.5 11h.01M2 10.5c0 1.2.9 2 2 2"/>',
   eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   eyeOff:'<path d="M9.9 4.2A10 10 0 0 1 12 4c6.5 0 10 8 10 8a17 17 0 0 1-2.2 3.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M2 2l20 20"/>',
@@ -570,6 +582,10 @@ function renderShell(){
   const pages=PAGES.filter(p=>(!p.owner||isOwner()) && (!p.feat||feat(p.feat)));
   if(!pages.some(p=>p.id===S.page)) S.page='dashboard';
   const nav=pages.map(p=>`<a data-p="${p.id}" class="${S.page===p.id?'on':''}">${ic(p.i)} <span>${p.t}</span></a>`).join('');
+  // Ponsel: 3 menu utama + "Lainnya" (sisa menu, ganti sandi, keluar)
+  const main=pages.slice(0,3), more=pages.slice(3);
+  const bnav=main.map(p=>`<a data-p="${p.id}" class="${S.page===p.id?'on':''}">${ic(p.i)} <span>${p.t}</span></a>`).join('')
+    +`<a data-more class="${more.some(p=>p.id===S.page)?'on':''}" role="button" aria-label="Menu lainnya">${ic('grid')} <span>Lainnya</span></a>`;
   $('#app').innerHTML=`
   <div class="shell">
     <aside class="side">
@@ -583,17 +599,18 @@ function renderShell(){
         <button class="icon-btn" title="Keluar" data-act="out">${ic('out',16)}</button></div>
     </aside>
     <main class="main"><div id="page"></div></main>
-    <nav class="bottom-nav">${nav}</nav>
+    <nav class="bottom-nav" aria-label="Menu utama">${bnav}</nav>
   </div>`;
   $$('[data-p]').forEach(a=>a.onclick=()=>{ S.page=a.dataset.p; renderShell(); window.scrollTo(0,0); });
   $$('[data-act="out"]').forEach(b=>b.onclick=logout);
   $$('[data-act="pw"]').forEach(b=>b.onclick=openChangePw);
+  $('[data-more]').onclick=()=>openMore(more);
   renderPage();
 }
 function header(title, sub, right){
   return `${DEMO?`<div class="demo-banner">${ic('info',16)} Mode pratinjau — data contoh, perubahan tidak disimpan.</div>`:''}
   <div class="top"><h1>${title}<small>${sub||''}</small></h1>${right||''}
-  <div class="mobile-me" style="gap:4px"><button class="icon-btn" data-act="pw" title="Ganti sandi">${ic('key')}</button><button class="icon-btn" data-act="out" title="Keluar">${ic('out')}</button></div></div>`;
+</div>`;
 }
 function monthPicker(){ return `<div class="month-pick"><button data-mv="-1" aria-label="Bulan sebelumnya">${ic('left',16)}</button><span>${ymLabel(S.month)}</span><button data-mv="1" aria-label="Bulan berikutnya">${ic('right',16)}</button></div>`; }
 function bindMonth(){ $$('[data-mv]').forEach(b=>b.onclick=()=>{ S.month=ymAdd(S.month,Number(b.dataset.mv)); renderPage(); }); }
@@ -1015,6 +1032,22 @@ async function pPengaturan(){
   try{ S.log=await call('getLog'); }catch(e){ return; }
   if(S.page!=='pengaturan') return;
   $('#lg').innerHTML = S.log.length? `<div style="max-height:420px;overflow:auto">${S.log.map(l=>`<div class="rec"><div class="rd"><b>${esc(l.aksi.replace(/_/g,' ').toLowerCase())}</b><small>${esc(l.user)} · ${esc(l.waktu)}${l.detail?' · '+esc(l.detail):''}</small></div></div>`).join('')}</div>` : '<div class="empty">Belum ada aktivitas.</div>';
+}
+
+/* ===================== MENU LAINNYA (ponsel) ===================== */
+function openMore(more){
+  const m=$('#modal'); m.className='modal sheet-wrap';
+  m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-label="Menu lainnya"><div class="sheet-grip"></div>
+    <div class="sheet-user"><div class="avatar">${esc(S.user.nama.charAt(0).toUpperCase())}</div><div><b>${esc(S.user.nama)}</b><small>${esc(S.user.peran)}</small></div></div>
+    ${more.map(p=>`<button class="sheet-item ${S.page===p.id?'on':''}" data-sp="${p.id}">${ic(p.i,20)}<span>${p.t}</span></button>`).join('')}
+    ${more.length?'<div class="sheet-sep"></div>':''}
+    ${S.sheetUrl?`<a class="sheet-item" href="${esc(S.sheetUrl)}" target="_blank" rel="noopener">${ic('sheet',20)}<span>Buka Spreadsheet</span></a>`:''}
+    <button class="sheet-item" data-sa="pw">${ic('key',20)}<span>Ganti kata sandi</span></button>
+    <button class="sheet-item danger" data-sa="out">${ic('out',20)}<span>Keluar</span></button></div>`;
+  m.onclick=e=>{ if(e.target===m) closeModal(); };
+  $$('[data-sp]',m).forEach(b=>b.onclick=()=>{ closeModal(); S.page=b.dataset.sp; renderShell(); window.scrollTo(0,0); });
+  $('[data-sa="pw"]',m).onclick=()=>{ closeModal(); openChangePw(); };
+  $('[data-sa="out"]',m).onclick=()=>{ closeModal(); logout(); };
 }
 
 /* ===================== MODAL ===================== */
